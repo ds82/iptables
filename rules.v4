@@ -5,38 +5,44 @@
 :OUTPUT ACCEPT [0:0]
 :POSTROUTING ACCEPT [0:0]
 
-# HTTP
+# IPs
+# 144.76.28.6            // jinx.ds82.de
+# 136.243.241.162        // git.ds82.de
+# 144.76.28.12		 // udyr.ds82.de
+
+# fizz (10.0.0.12) - nginx
+## http(s) 144.76.28.6
 -A PREROUTING -d 144.76.28.6 -p tcp -m tcp --dport 80 -j DNAT --to-destination 10.0.0.12:80
 -A PREROUTING -d 144.76.28.6 -p tcp -m tcp --dport 443 -j DNAT --to-destination 10.0.0.12:443
+## http(s) 136.243.241.162
 -A PREROUTING -d 136.243.241.162 -p tcp -m tcp --dport 80 -j DNAT --to-destination 10.0.0.12:80
 -A PREROUTING -d 136.243.241.162 -p tcp -m tcp --dport 443 -j DNAT --to-destination 10.0.0.12:443
 
-# gitlab
+# nunu (10.0.0.20) docker
+## gitlab shell
 -A PREROUTING -d 144.76.28.6 -p tcp -m tcp --dport 11022 -j DNAT --to-destination 10.0.0.20:11022
 -A PREROUTING -d 136.243.241.162 -p tcp -m tcp --dport 22 -j DNAT --to-destination 10.0.0.20:11022
-#-A PREROUTING -d 144.76.28.6 -p tcp -m tcp --dport 10022 -j DNAT --to-destination 10.0.0.20:10022
-#-A PREROUTING -d 144.76.28.6 -p tcp -m tcp --dport 444 -j DNAT --to-destination 10.0.0.20:443
+## jabber
+-A PREROUTING -d 144.76.28.6 -p udp -m udp --dport 5269 -j DNAT --to-destination 10.0.0.20:5269
+-A PREROUTING -d 144.76.28.6 -p udp -m udp --dport 5222 -j DNAT --to-destination 10.0.0.20:5222
+
+# jinx (10.0.0.10) mailserver
+-A PREROUTING -d 144.76.28.6 -p tcp -m tcp --dport 25 -j DNAT --to-destination 10.0.0.10:25
+-A PREROUTING -d 144.76.28.6 -p tcp -m tcp --dport 143 -j DNAT --to-destination 10.0.0.10:143
+-A PREROUTING -d 144.76.28.6 -p tcp -m tcp --dport 993 -j DNAT --to-destination 10.0.0.10:993
 
 # ts
 -A PREROUTING -d 144.76.28.6 -p udp -m udp --dport 9987 -j DNAT --to-destination 10.0.0.15:9987
-
-# jabber
--A PREROUTING -d 144.76.28.6 -p udp -m udp --dport 5269 -j DNAT --to-destination 10.0.0.20:5269
--A PREROUTING -d 144.76.28.6 -p udp -m udp --dport 5222 -j DNAT --to-destination 10.0.0.20:5222
 
 # shyvana
 -A PREROUTING -d 144.76.28.6 -p tcp -m tcp --dport 4416 -j DNAT --to-destination 10.0.0.16:4416
 
 # -A PREROUTING -i eth0 -d 144.76.28.6 -p tcp -m multiport --dports 25,143,993 -j LOG 
--A PREROUTING -d 144.76.28.6 -p tcp -m tcp --dport 25 -j DNAT --to-destination 10.0.0.10:25
--A PREROUTING -d 144.76.28.6 -p tcp -m tcp --dport 143 -j DNAT --to-destination 10.0.0.10:143
--A PREROUTING -d 144.76.28.6 -p tcp -m tcp --dport 993 -j DNAT --to-destination 10.0.0.10:993
+#-A POSTROUTING -s 10.0.0.12 -o eth0 -j SNAT --to-source 144.76.28.6
+#-A POSTROUTING -s 10.0.0.10 -o eth0 -j SNAT --to-source 144.76.28.6
+#-A POSTROUTING -s 10.0.0.12 -o eth0 -j SNAT --to-source 144.76.28.6
 
--A POSTROUTING -s 10.0.0.12 -o eth0 -j SNAT --to-source 144.76.28.6
--A POSTROUTING -s 10.0.0.10 -o eth0 -j SNAT --to-source 144.76.28.6
--A POSTROUTING -s 10.0.0.12 -o eth0 -j SNAT --to-source 144.76.28.6
-
--A POSTROUTING -m conntrack -s 10.0.0.0/24 -o eth0 -j SNAT --ctstate NEW --to-source 144.76.28.6
+#-A POSTROUTING -m conntrack -s 10.0.0.0/24 -o eth0 -j SNAT --ctstate NEW --to-source 144.76.28.6
 -A POSTROUTING -s 10.0.10.0/24 -o eth0 -j MASQUERADE
 COMMIT
 
